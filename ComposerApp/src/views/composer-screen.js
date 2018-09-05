@@ -1,7 +1,58 @@
 import React, {Component} from 'react';
+import PropTypes from "prop-types";
 import {Text, View, TouchableOpacity, Image, TextInput} from 'react-native';
 import styles from '../styles/composer-screen-style.js';
 import LinearGradient from 'react-native-linear-gradient';
+import {Surface} from 'gl-react-native';
+import { Shaders, Node, GLSL} from 'gl-react';
+import JSON2D from "react-json2d";
+
+const shaders = Shaders.create(
+  {
+          helloBlue: {
+            frag: GLSL`
+                  precision highp float;
+                  varying vec2 uv;
+                  uniform float blue;
+                  void main() {
+                    gl_FragColor = vec4(uv.x, uv.y, blue, 1.0);
+                  }`
+          }
+  }
+);
+
+class HelloBlue extends React.Component
+{
+  render()
+  {
+    const { blue } = this.props;
+    return <Node shader={shaders.helloBlue} uniforms={{ blue }} />;
+  }
+}
+
+
+
+const shaders2 = Shaders.create({
+  funky: {
+    frag: GLSL`
+precision highp float;
+varying vec2 uv;
+uniform sampler2D t;
+void main() {
+  gl_FragColor = texture2D(t, uv) * vec4(
+    0.5 + 0.5 * cos(uv.x * 30.0),
+    0.5 + 0.5 * sin(uv.y * 20.0),
+    0.7 + 0.3 * sin(uv.y * 8.0),
+    1.0);
+}
+` }
+});
+
+const Funky = ({children: t}) => <Node shader={shaders2.funky} uniforms={{t}} />;
+
+
+
+
 
 export default class ComposerScreen extends Component
 {
@@ -19,18 +70,10 @@ export default class ComposerScreen extends Component
           </View>
 
 
-          <View style={styles.view_center_bg}>
-              <LinearGradient start={{x: 1.0, y: 0.5}} end={{x: 0.5, y: 1.0}}
-                              locations={[0.1,0.4,1.0]}
-                              colors={['#66c6ff', '#68e3ff', '#ed89ff']}
-                              style={styles.LinearGradientStyle} >
-                  <TextInput
-                      placeholder="Tap to type..."
-                      placeholderTextColor="#dbdbdb"
-                      underlineColorAndroid='transparent'
-                      style={styles.TextInputStyleClass}/>
-              </LinearGradient>
-          </View>
+          <Surface style={styles.view_center_bg}>
+              <HelloBlue blue={0.4} />
+              
+          </Surface>
 
 
           <View style={styles.view_bottom_bg}>
@@ -46,10 +89,11 @@ export default class ComposerScreen extends Component
                   <View style={styles.options_btn_view_style}>
                       <TouchableOpacity style={styles.background_picker_btn_style}
                         onPress = {() => this.props.navigation.navigate('GradientPicker')}>
-                          <LinearGradient start={{x: 1.0, y: 0.5}} end={{x: 0.5, y: 1.0}}
-                                          locations={[0.1,0.4,1.0]}
-                                          colors={['#66c6ff', '#68e3ff', '#ed89ff']}
-                                          style={styles.color_picker_btn_style}/>
+                        <LinearGradient start={{x: 1.0, y: 0.5}} end={{x: 0.5, y: 1.0}}
+                                        locations={[0.1,0.4,1.0]}
+                                        colors={['#66c6ff', '#68e3ff', '#ed89ff']}
+                                        style={styles.color_picker_btn_style} >
+                        </LinearGradient>
                       </TouchableOpacity>
                   </View>
                   <View style={styles.options_btn_view_style}>
